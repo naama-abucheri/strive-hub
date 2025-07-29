@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0, 0%, 100%);
+  --foreground: hsl(222, 84%, 5%);
+  --muted: hsl(210, 40%, 98%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(222, 84%, 5%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(222, 84%, 5%);
+  --border: hsl(214, 32%, 91%);
+  --input: hsl(214, 32%, 91%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(210, 40%, 98%);
+  --secondary: hsl(210, 40%, 96%);
+  --secondary-foreground: hsl(222, 84%, 5%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(222, 84%, 5%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(207, 90%, 54%);
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: hsl(222, 84%, 5%);
+  --foreground: hsl(210, 40%, 98%);
+  --muted: hsl(217, 33%, 18%);
+  --muted-foreground: hsl(215, 20%, 65%);
+  --popover: hsl(222, 84%, 5%);
+  --popover-foreground: hsl(210, 40%, 98%);
+  --card: hsl(222, 84%, 5%);
+  --card-foreground: hsl(210, 40%, 98%);
+  --border: hsl(217, 33%, 18%);
+  --input: hsl(217, 33%, 18%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(222, 84%, 5%);
+  --secondary: hsl(217, 33%, 18%);
+  --secondary-foreground: hsl(210, 40%, 98%);
+  --accent: hsl(217, 33%, 18%);
+  --accent-foreground: hsl(210, 40%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(210, 40%, 98%);
+  --ring: hsl(207, 90%, 54%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  }
+}
+
+/* Custom styles matching the design */
+.bg-slate-50 {
+  background-color: hsl(210, 40%, 98%);
+}
+
+.text-slate-800 {
+  color: hsl(215, 25%, 27%);
+}
+
+.text-slate-600 {
+  color: hsl(215, 16%, 47%);
+}
+
+.text-slate-500 {
+  color: hsl(215, 20%, 65%);
+}
+
+.text-slate-400 {
+  color: hsl(215, 20%, 65%);
+}
+
+.border-slate-200 {
+  border-color: hsl(214, 32%, 91%);
+}
+
+.bg-slate-50 {
+  background-color: hsl(210, 40%, 98%);
+}
+
+.bg-slate-100 {
+  background-color: hsl(214, 32%, 91%);
+}
+
+/* Ensure proper contrast for buttons and interactive elements */
+.bg-blue-600 {
+  background-color: hsl(207, 90%, 54%);
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: hsl(207, 90%, 48%);
+}
+
+.text-blue-600 {
+  color: hsl(207, 90%, 54%);
+}
+
+.hover\:text-blue-700:hover {
+  color: hsl(207, 90%, 48%);
+}
+
+.bg-blue-50 {
+  background-color: hsl(207, 90%, 97%);
+}
+
+.bg-blue-100 {
+  background-color: hsl(207, 90%, 92%);
+}
+
+/* Emerald colors for habits/success states */
+.text-emerald-600 {
+  color: hsl(158, 64%, 52%);
+}
+
+.bg-emerald-100 {
+  background-color: hsl(158, 64%, 90%);
+}
+
+.bg-emerald-500 {
+  background-color: hsl(158, 64%, 52%);
+}
+
+.hover\:border-emerald-500:hover {
+  border-color: hsl(158, 64%, 52%);
+}
+
+.hover\:bg-emerald-500:hover {
+  background-color: hsl(158, 64%, 52%);
+}
+
+/* Amber colors for analytics */
+.text-amber-600 {
+  color: hsl(32, 95%, 44%);
+}
+
+.bg-amber-100 {
+  background-color: hsl(32, 95%, 90%);
+}
+
+.bg-amber-500 {
+  background-color: hsl(32, 95%, 44%);
+}
+
+/* Purple colors for categories */
+.text-purple-600 {
+  color: hsl(271, 91%, 65%);
+}
+
+.bg-purple-100 {
+  background-color: hsl(271, 91%, 95%);
+}
+
+.bg-purple-500 {
+  background-color: hsl(271, 91%, 65%);
+}
+
+/* Fire/orange color for streaks */
+.text-orange-500 {
+  color: hsl(20, 95%, 55%);
+}
