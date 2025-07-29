@@ -1,88 +1,91 @@
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Target, BarChart3, Calendar, TrendingUp, LogOut, Settings } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Home, Target, Calendar, BarChart3, LogOut } from "lucide-react";
 
 export default function Sidebar() {
-  const [location, setLocation] = useLocation();
+  const [location] = useLocation();
   const { user } = useAuth();
 
-  const navItems = [
-    { path: "/", label: "Dashboard", icon: BarChart3 },
-    { path: "/goals", label: "Goals", icon: Target },
-    { path: "/habits", label: "Habits", icon: Calendar },
-    { path: "/analytics", label: "Analytics", icon: TrendingUp },
+  const navigation = [
+    { name: "Dashboard", href: "/", icon: Home },
+    { name: "Goals", href: "/goals", icon: Target },
+    { name: "Habits", href: "/habits", icon: Calendar },
+    { name: "Analytics", href: "/analytics", icon: BarChart3 },
   ];
 
   return (
-    <div className="w-64 bg-white shadow-lg border-r border-slate-200 h-full flex flex-col">
-      <div className="p-6 border-b border-slate-200">
+    <div className="flex flex-col h-full w-64 bg-white border-r border-slate-200">
+      {/* Logo */}
+      <div className="flex items-center px-6 py-4">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
-            <Target className="text-white text-lg" />
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+            <Target className="text-white text-sm" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-slate-800">StriveHub</h1>
-            <p className="text-sm text-slate-500">Goal & Habit Tracker</p>
+            <h1 className="text-lg font-bold text-slate-800">StriveHub</h1>
           </div>
         </div>
       </div>
-      
-      <nav className="p-4 space-y-2 flex-1">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = location === item.path;
-          
-          return (
-            <button
-              key={item.path}
-              onClick={() => setLocation(item.path)}
-              className={`flex items-center space-x-3 p-3 rounded-lg w-full text-left font-medium transition-colors duration-200 ${
-                isActive
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-slate-600 hover:bg-slate-50"
-              }`}
-            >
-              <Icon className="w-5 h-5" />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
+
+      <Separator />
+
+      {/* Navigation */}
+      <nav className="flex-1 px-4 py-4">
+        <div className="space-y-2">
+          {navigation.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.href;
+            return (
+              <Link key={item.name} href={item.href}>
+                <Button
+                  variant={isActive ? "secondary" : "ghost"}
+                  className={`w-full justify-start ${
+                    isActive ? "bg-blue-50 text-blue-600" : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <Icon className="mr-3 h-4 w-4" />
+                  {item.name}
+                </Button>
+              </Link>
+            );
+          })}
+        </div>
       </nav>
+
+      <Separator />
 
       {/* User Profile */}
       <div className="p-4">
-        <div className="flex items-center space-x-3 p-3 bg-slate-50 rounded-lg">
-          {user?.profileImageUrl ? (
-            <img 
-              src={user.profileImageUrl} 
-              alt="User profile" 
-              className="w-10 h-10 rounded-full object-cover" 
-            />
-          ) : (
-            <div className="w-10 h-10 bg-slate-300 rounded-full flex items-center justify-center">
-              <span className="text-slate-600 font-medium">
-                {user?.firstName?.[0] || user?.email?.[0] || "U"}
-              </span>
+        {user && (
+          <div className="flex items-center space-x-3 mb-4">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={user.profileImageUrl || ""} />
+              <AvatarFallback>
+                {user.firstName?.[0] || user.email?.[0] || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-slate-800 truncate">
+                {user.firstName || user.email}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {user.email}
+              </p>
             </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-slate-800 truncate">
-              {user?.firstName && user?.lastName 
-                ? `${user.firstName} ${user.lastName}`
-                : user?.email || "User"}
-            </p>
-            <p className="text-sm text-slate-500 truncate">{user?.email}</p>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => window.location.href = "/api/logout"}
-            className="text-slate-400 hover:text-slate-600"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
-        </div>
+        )}
+        
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-slate-600 hover:text-slate-900"
+          onClick={() => window.location.href = "/api/logout"}
+        >
+          <LogOut className="mr-3 h-4 w-4" />
+          Log Out
+        </Button>
       </div>
     </div>
   );

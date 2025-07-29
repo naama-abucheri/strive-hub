@@ -1,22 +1,23 @@
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { insertGoalSchema } from "@shared/schema";
-import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { insertGoalSchema, type Goal } from "@shared/schema";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import type { Goal } from "@shared/schema";
+import { z } from "zod";
 
 const goalFormSchema = insertGoalSchema.extend({
   deadline: z.string().min(1, "Deadline is required"),
+  progress: z.number().min(0).max(100).default(0),
 });
 
 type GoalFormData = z.infer<typeof goalFormSchema>;
@@ -28,14 +29,9 @@ interface GoalFormProps {
 
 export default function GoalForm({ goal, onSuccess }: GoalFormProps) {
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<GoalFormData>({
+  const form = useForm<GoalFormData>({
     resolver: zodResolver(goalFormSchema),
     defaultValues: {
       title: goal?.title || "",
@@ -49,13 +45,14 @@ export default function GoalForm({ goal, onSuccess }: GoalFormProps) {
   const createGoalMutation = useMutation({
     mutationFn: async (data: GoalFormData) => {
       if (goal) {
-        return await apiRequest("PATCH", `/api/goals/${goal.id}`, data);
+        await apiRequest("PATCH", `/api/goals/${goal.id}`, data);
       } else {
-        return await apiRequest("POST", "/api/goals", data);
+        await apiRequest("POST", "/api/goals", data);
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/goals"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/stats"] });
       toast({
         title: "Success",
         description: goal ? "Goal updated successfully" : "Goal created successfully",
@@ -80,113 +77,125 @@ export default function GoalForm({ goal, onSuccess }: GoalFormProps) {
         variant: "destructive",
       });
     },
+    onSettled: () => {
+      setIsSubmitting(false);
+    },
   });
 
   const onSubmit = (data: GoalFormData) => {
+    setIsSubmitting(true);
     createGoalMutation.mutate(data);
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <DialogHeader>
-        <DialogTitle className="text-xl font-bold text-slate-800">
-          {goal ? "Edit Goal" : "Create New Goal"}
-        </DialogTitle>
+        <DialogTitle>{goal ? "Edit Goal" : "Create New Goal"}</DialogTitle>
       </DialogHeader>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 mt-6">
-        <div>
-          <Label htmlFor="title" className="text-sm font-medium text-slate-700">Title</Label>
-          <Input
-            id="title"
-            {...register("title")}
-            placeholder="Enter goal title"
-            className="mt-1"
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter goal title" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.title && (
-            <p className="text-red-500 text-sm mt-1">{errors.title.message}</p>
-          )}
-        </div>
 
-        <div>
-          <Label htmlFor="description" className="text-sm font-medium text-slate-700">Description</Label>
-          <Textarea
-            id="description"
-            {...register("description")}
-            placeholder="Describe your goal (optional)"
-            rows={3}
-            className="mt-1"
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Describe your goal (optional)" 
+                    className="resize-none" 
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.description && (
-            <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
-          )}
-        </div>
 
-        <div>
-          <Label htmlFor="deadline" className="text-sm font-medium text-slate-700">Deadline</Label>
-          <Input
-            id="deadline"
-            type="date"
-            {...register("deadline")}
-            className="mt-1"
+          <FormField
+            control={form.control}
+            name="deadline"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Deadline</FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.deadline && (
-            <p className="text-red-500 text-sm mt-1">{errors.deadline.message}</p>
-          )}
-        </div>
 
-        <div>
-          <Label htmlFor="status" className="text-sm font-medium text-slate-700">Status</Label>
-          <Select 
-            value={watch("status")} 
-            onValueChange={(value) => setValue("status", value)}
-          >
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="completed">Completed</SelectItem>
-              <SelectItem value="paused">Paused</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.status && (
-            <p className="text-red-500 text-sm mt-1">{errors.status.message}</p>
-          )}
-        </div>
-
-        <div>
-          <Label htmlFor="progress" className="text-sm font-medium text-slate-700">Progress (%)</Label>
-          <Input
-            id="progress"
-            type="number"
-            min="0"
-            max="100"
-            {...register("progress", { valueAsNumber: true })}
-            placeholder="0"
-            className="mt-1"
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="paused">Paused</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-          {errors.progress && (
-            <p className="text-red-500 text-sm mt-1">{errors.progress.message}</p>
-          )}
-        </div>
 
-        <div className="flex justify-end space-x-3 pt-4">
-          <Button type="button" variant="outline" onClick={onSuccess}>
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={createGoalMutation.isPending}
-            className="bg-blue-600 hover:bg-blue-700 font-medium transition-colors duration-200"
-          >
-            {createGoalMutation.isPending 
-              ? (goal ? "Updating..." : "Creating...") 
-              : (goal ? "Update Goal" : "Create Goal")
-            }
-          </Button>
-        </div>
-      </form>
+          <FormField
+            control={form.control}
+            name="progress"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Progress: {field.value}%</FormLabel>
+                <FormControl>
+                  <Slider
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={[field.value]}
+                    onValueChange={(values) => field.onChange(values[0])}
+                    className="w-full"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {isSubmitting ? "Saving..." : goal ? "Update Goal" : "Create Goal"}
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
