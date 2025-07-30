@@ -38,8 +38,8 @@ export default function Goals() {
         description: "Goal deleted successfully",
       });
     },
-    onError: (error) => {
-      if (isUnauthorizedError(error)) {
+    onError: (error: unknown) => {
+      if (isUnauthorizedError(error as Error)) {
         toast({
           title: "Unauthorized",
           description: "You are logged out. Logging in again...",
@@ -121,9 +121,9 @@ export default function Goals() {
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <SheetTrigger asChild className="lg:hidden">
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-6 w-6" />
-                  </Button>
+                 <Button className="bg-transparent hover:bg-gray-100">
+  <Menu className="w-6 h-6" />
+</Button>
                 </SheetTrigger>
                 <div>
                   <h2 className="text-2xl font-bold text-slate-800">Goals</h2>
@@ -155,7 +155,7 @@ export default function Goals() {
                   <p className="text-slate-600">Loading goals...</p>
                 </div>
               </div>
-            ) : !goals || goals.length === 0 ? (
+            ) : !Array.isArray(goals) || goals.length === 0 ? (
               <div className="text-center py-16">
                 <Target className="w-16 h-16 text-slate-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-slate-800 mb-2">No goals yet</h3>
@@ -189,8 +189,6 @@ export default function Goals() {
                           <div className="flex items-center space-x-2">
                             {getStatusBadge(goal.status)}
                             <Button
-                              variant="ghost"
-                              size="icon"
                               onClick={() => {
                                 setEditingGoal(goal);
                                 setIsGoalFormOpen(true);
@@ -199,8 +197,6 @@ export default function Goals() {
                               <Edit className="w-4 h-4" />
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="icon"
                               onClick={() => deleteGoalMutation.mutate(goal.id)}
                             >
                               <Trash2 className="w-4 h-4 text-red-500" />
@@ -239,13 +235,13 @@ export default function Goals() {
           </main>
         </div>
 
-        <SheetContent side="left" className="w-64">
-          <Sidebar />
-        </SheetContent>
+        <SheetContent />
+        {/* Place Sidebar outside if children are not supported by SheetContent */}
+        <Sidebar />
       </Sheet>
 
       {/* Edit Goal Dialog */}
-      <Dialog open={!!editingGoal} onOpenChange={(open) => !open && setEditingGoal(null)}>
+      <Dialog open={!!editingGoal} onOpenChange={(open: boolean) => !open && setEditingGoal(null)}>
         <DialogContent>
           <GoalForm 
             goal={editingGoal} 
